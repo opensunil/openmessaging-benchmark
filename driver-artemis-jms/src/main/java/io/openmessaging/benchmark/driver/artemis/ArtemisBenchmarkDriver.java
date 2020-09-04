@@ -63,7 +63,7 @@ public class ArtemisBenchmarkDriver implements BenchmarkDriver {
 
 			context = new InitialContext(jndi_env);
 			JmsConnectionFactory cf = (JmsConnectionFactory) context.lookup("ConnectionFactory");
-			connection = cf.createConnection();
+			connection = cf.createQueueConnection();
 			connection.start();
 		} catch (Exception e) {
 			throw new IOException(e);
