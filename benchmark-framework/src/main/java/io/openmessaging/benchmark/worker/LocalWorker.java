@@ -225,6 +225,7 @@ public class LocalWorker implements Worker, ConsumerCallback {
                             bytesSentCounter.add(payloadData.length);
 
                             long latencyMicros = TimeUnit.NANOSECONDS.toMicros(System.nanoTime() - sendTime);
+                            log.debug("LatencyRecorder: "+publishLatencyRecorder+" latency: "+latencyMicros);
                             publishLatencyRecorder.recordValue(latencyMicros);
                             cumulativePublishLatencyRecorder.recordValue(latencyMicros);
                             publishLatencyStats.registerSuccessfulEvent(latencyMicros, TimeUnit.MICROSECONDS);
@@ -285,6 +286,7 @@ public class LocalWorker implements Worker, ConsumerCallback {
 
     @Override
     public void messageReceived(byte[] data, long publishTimestamp) {
+    	log.debug("BenchmarkConsumer: message received: "+data.length);
         messagesReceived.increment();
         totalMessagesReceived.increment();
         messagesReceivedCounter.inc();

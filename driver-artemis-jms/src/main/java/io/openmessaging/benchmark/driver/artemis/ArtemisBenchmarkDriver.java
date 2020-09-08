@@ -58,13 +58,18 @@ public class ArtemisBenchmarkDriver implements BenchmarkDriver {
 		try {
 			Hashtable<String, Object> jndi_env = new Hashtable<String, Object>();
 			jndi_env.put(InitialContext.INITIAL_CONTEXT_FACTORY,
-					"org.apache.activemq.artemis.jndi.ActiveMQInitialContextFactory");
-			jndi_env.put("connectionFactory.ConnectionFactory", "tcp://localhost:61616");
+					//"org.apache.activemq.artemis.jndi.ActiveMQInitialContextFactory");
+//					"org.apache.qpid.jndi.PropertiesFileInitialContextFactory");
+					"org.apache.qpid.jms.jndi.JmsInitialContextFactory");
+			jndi_env.put("connectionFactory.myFactoryLookup", config.brokerAddress);
 
 			context = new InitialContext(jndi_env);
-			JmsConnectionFactory cf = (JmsConnectionFactory) context.lookup("ConnectionFactory");
-			connection = cf.createQueueConnection();
+			JmsConnectionFactory cf = (JmsConnectionFactory) context.lookup("myFactoryLookup");
+			connection = cf.createConnection(System.getProperty("USER"), System.getProperty("PASSWORD"));
 			connection.start();
+			session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+			
 		} catch (Exception e) {
 			throw new IOException(e);
 		}
@@ -85,7 +90,9 @@ public class ArtemisBenchmarkDriver implements BenchmarkDriver {
 
 		ForkJoinPool.commonPool().submit(() -> {
 			try {
+				log.info("Creating queue: "+topic);
 				session.createQueue(topic);
+				log.info("Create queue task complete");
 				future.complete(null);
 			} catch (Exception e) {
 				future.completeExceptionally(e);
@@ -127,7 +134,11 @@ public class ArtemisBenchmarkDriver implements BenchmarkDriver {
 	@Override
 	public void close() throws Exception {
 		log.info("Shutting down ActiveMQ Artemis benchmark driver");
-
+		
+		if (session!=null) {
+			session.close();
+		}
+		
 		if (connection != null) {
 			connection.close();
 		}

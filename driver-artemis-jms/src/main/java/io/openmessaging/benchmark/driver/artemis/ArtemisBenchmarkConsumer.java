@@ -18,6 +18,8 @@
  */
 package io.openmessaging.benchmark.driver.artemis;
 
+import java.nio.charset.StandardCharsets;
+
 import javax.jms.Connection;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
@@ -38,30 +40,37 @@ public class ArtemisBenchmarkConsumer implements BenchmarkConsumer {
 
 	public ArtemisBenchmarkConsumer(String topic, String queueName, Connection connection, ConsumerCallback callback)
 			throws JMSException {
-
-		session = connection.createSession(false, Session.SESSION_TRANSACTED);
+		log.info("Creating session with connection: "+connection);
+		session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 		try {
-			Queue queue = session.createQueue(queueName);
-
+			log.info("Get Queue: "+topic);
+			Queue queue = session.createQueue(topic);
+			log.info("Get Consumer from queue: "+queue);
 			consumer = session.createConsumer(queue);
+			log.info("Got Consumer: "+consumer);
 		} catch (Exception e) {
 			log.warn("Queue creation error: " + e);
 		}
 
 		if (consumer != null) {
+			log.info("Setting listener on consumer");
 			consumer.setMessageListener(message -> {
 				byte[] payload = null;
 				try {
+					log.debug("Retrieve payload");
 					payload = message.getBody(byte[].class);
 					callback.messageReceived(payload, message.getJMSTimestamp());
-					message.acknowledge();
-					log.debug("Consumer: Message acked");
-					session.commit();
+//					message.acknowledge();
+//					String payloadText = new String(payload, StandardCharsets.UTF_8);
+//					log.debug("Consumer: Message acked: "+payload.length+" text:"+payloadText);
+//					session.commit();
 				} catch (JMSException e) {
 					log.warn("Failed to acknowledge message", e);
 				}
 			});
+			log.info("Added message listener");
 		}
+		
 	}
 
 	@Override

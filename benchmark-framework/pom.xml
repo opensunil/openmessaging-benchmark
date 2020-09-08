@@ -91,6 +91,22 @@
 			<artifactId>jcommander</artifactId>
 			<version>1.48</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>org.apache.qpid</groupId>
+			<artifactId>qpid-jms-client</artifactId>
+			<version>0.54.0</version>
+			<exclusions>
+			  <exclusion>
+			    <groupId>io.netty</groupId>
+			    <artifactId>netty-transport-native-epoll</artifactId>
+			  </exclusion>
+			  <exclusion>
+			    <groupId>io.netty</groupId>
+			    <artifactId>netty-transport-native-kqueue</artifactId>
+			  </exclusion>
+			</exclusions>
+		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
@@ -116,9 +132,15 @@
 			<version>${project.version}</version>
 		</dependency>
 
+<!-- 		<dependency> -->
+<!-- 			<groupId>${project.groupId}</groupId> -->
+<!-- 			<artifactId>driver-artemis</artifactId> -->
+<!-- 			<version>${project.version}</version> -->
+<!-- 		</dependency> -->
+		
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>driver-artemis</artifactId>
+			<artifactId>driver-artemis-jms</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

@@ -154,14 +154,14 @@ public class WorkloadGenerator implements AutoCloseable {
         // This is work around the fact that there's no way to have a consumer ready in Kafka without first publishing
         // some message on the topic, which will then trigger the partitions assignment to the consumers
 
-        int expectedMessages = workload.topics * workload.subscriptionsPerTopic;
+        int expectedMessages = workload.topics; // * workload.subscriptionsPerTopic;
 
         // In this case we just publish 1 message and then wait for consumers to receive the data
         worker.probeProducers();
 
         while (true) {
             CountersStats stats = worker.getCountersStats();
-
+            log.debug("Stats: received:"+stats.messagesReceived+" < expected:"+ expectedMessages);
             if (stats.messagesReceived < expectedMessages) {
                 try {
                     Thread.sleep(100);

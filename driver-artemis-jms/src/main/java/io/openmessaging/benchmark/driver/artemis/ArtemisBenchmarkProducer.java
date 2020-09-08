@@ -18,6 +18,7 @@
  */
 package io.openmessaging.benchmark.driver.artemis;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -45,6 +46,7 @@ public class ArtemisBenchmarkProducer implements BenchmarkProducer {
 		try {
 			session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 			Queue queue = session.createQueue(address);
+			log.info("Create queue addressed: "+address+" queue: "+queue);
 			producer = session.createProducer(queue);
 		} catch (Exception e) {
 			log.warn("Queue creation error: " + e);
@@ -62,6 +64,9 @@ public class ArtemisBenchmarkProducer implements BenchmarkProducer {
 	public CompletableFuture<Void> sendAsync(Optional<String> key, byte[] payload) {
 
 		try {
+//			String payloadText = new String(payload, StandardCharsets.UTF_8);
+//			log.debug("Producer: Message created: "+payload.length+" text:"+payloadText);
+			
 			BytesMessage msg = session.createBytesMessage();
 			msg.setJMSTimestamp(System.currentTimeMillis());
 
@@ -69,12 +74,14 @@ public class ArtemisBenchmarkProducer implements BenchmarkProducer {
 			Runnable produceMessage = () -> {
 				try {
 					producer.send(msg);
+					log.debug("Sending message");
 				} catch (Exception e) {
 					log.error("Error sending message: " + e);
 				}
 			};
 			return CompletableFuture.runAsync(produceMessage);
 		} catch (Exception e) {
+			log.error("Error sending message");
 			return CompletableFuture.runAsync(null);
 		}
 	}
