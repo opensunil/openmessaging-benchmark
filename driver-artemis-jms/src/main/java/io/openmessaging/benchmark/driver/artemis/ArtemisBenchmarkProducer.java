@@ -64,8 +64,6 @@ public class ArtemisBenchmarkProducer implements BenchmarkProducer {
 	public CompletableFuture<Void> sendAsync(Optional<String> key, byte[] payload) {
 
 		try {
-//			String payloadText = new String(payload, StandardCharsets.UTF_8);
-//			log.debug("Producer: Message created: "+payload.length+" text:"+payloadText);
 			
 			BytesMessage msg = session.createBytesMessage();
 			msg.setJMSTimestamp(System.currentTimeMillis());

@@ -58,8 +58,6 @@ public class ArtemisBenchmarkDriver implements BenchmarkDriver {
 		try {
 			Hashtable<String, Object> jndi_env = new Hashtable<String, Object>();
 			jndi_env.put(InitialContext.INITIAL_CONTEXT_FACTORY,
-					//"org.apache.activemq.artemis.jndi.ActiveMQInitialContextFactory");
-//					"org.apache.qpid.jndi.PropertiesFileInitialContextFactory");
 					"org.apache.qpid.jms.jndi.JmsInitialContextFactory");
 			jndi_env.put("connectionFactory.myFactoryLookup", config.brokerAddress);
 

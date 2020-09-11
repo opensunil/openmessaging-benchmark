@@ -60,10 +60,6 @@ public class ArtemisBenchmarkConsumer implements BenchmarkConsumer {
 					log.debug("Retrieve payload");
 					payload = message.getBody(byte[].class);
 					callback.messageReceived(payload, message.getJMSTimestamp());
-//					message.acknowledge();
-//					String payloadText = new String(payload, StandardCharsets.UTF_8);
-//					log.debug("Consumer: Message acked: "+payload.length+" text:"+payloadText);
-//					session.commit();
 				} catch (JMSException e) {
 					log.warn("Failed to acknowledge message", e);
 				}
