@@ -18,9 +18,15 @@
  */
 package io.openmessaging.benchmark.worker.commands;
 
+import java.util.List;
+
 public class TopicsInfo {
     public int numberOfTopics;
     public int numberOfPartitionsPerTopic;
+
+    public boolean createDestinations;
+    public String queueName;
+    public List<String> topicNames;
 
     public TopicsInfo() {
     }
@@ -28,5 +34,32 @@ public class TopicsInfo {
     public TopicsInfo(int numberOfTopics, int numberOfPartitionsPerTopic) {
         this.numberOfTopics = numberOfTopics;
         this.numberOfPartitionsPerTopic = numberOfPartitionsPerTopic;
+    }
+
+    public boolean shouldCreateDestinations() {
+        return createDestinations;
+    }
+
+    public void setCreateDestinations(boolean createDestinations) {
+        this.createDestinations = createDestinations;
+    }
+
+    public String getQueueName() {
+        return queueName;
+    }
+
+    public void setQueueName(String queueName) {
+        this.queueName = queueName;
+    }
+
+    public List<String> getTopicNames() {
+        return topicNames;
+    }
+
+    public void setTopicNames(List<String> topicNames) {
+        this.topicNames = topicNames;
+        if (this.queueName==null) {
+            this.numberOfTopics = topicNames.size();
+        }
     }
 }

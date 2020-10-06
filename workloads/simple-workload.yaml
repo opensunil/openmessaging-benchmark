@@ -21,12 +21,15 @@
 name: Simple Workload 1 producer on 1 topic
 
 topics: 1
-partitionsPerTopic: 10
+partitionsPerTopic: 1
 messageSize: 1024
 payloadFile: "payload/payload-1Kb.data"
 subscriptionsPerTopic: 1
 producersPerTopic: 1
 consumerPerSubscription: 1
+createDestinations: false
+queueName: "eai.benchmark.tool.unicast"
+topicNames: ["eai.benchmark.transactions.multicast", "eai.benchmark.transactions.multicast.testA.unicast", "eai.benchmark.transactions.multicast.testB.unicast", "eai.benchmark.transactions.multicast.testC.unicast", "eai.benchmark.transactions.multicast.testD.unicast"]
 producerRate: 10000
 consumerBacklogSizeGB: 0
 testDurationMinutes: 5

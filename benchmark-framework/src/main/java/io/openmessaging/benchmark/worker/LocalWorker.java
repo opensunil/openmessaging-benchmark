@@ -147,13 +147,21 @@ public class LocalWorker implements Worker, ConsumerCallback {
         List<String> topics = new ArrayList<>();
         for (int i = 0; i < topicsInfo.numberOfTopics; i++) {
             String topic = String.format("%s-%s-%04d", topicPrefix, RandomGenerator.getRandomString(), i);
+            if (topicsInfo.getQueueName()!=null) {
+                topic = topicsInfo.getQueueName();
+            } else if (topicsInfo.getTopicNames()!=null) {
+                topic = topicsInfo.getTopicNames().get(i);
+            }
             topics.add(topic);
-            futures.add(benchmarkDriver.createTopic(topic, topicsInfo.numberOfPartitionsPerTopic));
+            if (topicsInfo.shouldCreateDestinations()) {
+                futures.add(benchmarkDriver.createTopic(topic, topicsInfo.numberOfPartitionsPerTopic));
+            }
+        }
+        if (topicsInfo.shouldCreateDestinations()) {
+            futures.forEach(CompletableFuture::join);
+            log.info("Created {} topics in {} ms", topics.size(), timer.elapsedMillis());
         }
 
-        futures.forEach(CompletableFuture::join);
-
-        log.info("Created {} topics in {} ms", topics.size(), timer.elapsedMillis());
         return topics;
     }
 

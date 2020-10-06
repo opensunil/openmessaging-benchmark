@@ -20,6 +20,8 @@ package io.openmessaging.benchmark;
 
 import io.openmessaging.benchmark.utils.distributor.KeyDistributorType;
 
+import java.util.List;
+
 public class Workload {
     public String name;
 
@@ -44,6 +46,10 @@ public class Workload {
     public int producersPerTopic;
 
     public int consumerPerSubscription;
+
+    public String queueName;
+
+    public List<String> topicNames;
 
     public int producerRate;
 
