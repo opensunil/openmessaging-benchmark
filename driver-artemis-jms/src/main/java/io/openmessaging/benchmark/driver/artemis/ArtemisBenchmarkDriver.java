@@ -47,7 +47,8 @@ public class ArtemisBenchmarkDriver implements BenchmarkDriver {
 	private ArtemisConfig config;
 
 	private InitialContext context;
-	private Connection connection;
+	private Connection consumerConnection;
+	private Connection producerConnection;
 	private Session session;
 
 	@Override
@@ -63,9 +64,11 @@ public class ArtemisBenchmarkDriver implements BenchmarkDriver {
 
 			context = new InitialContext(jndi_env);
 			JmsConnectionFactory cf = (JmsConnectionFactory) context.lookup("myFactoryLookup");
-			connection = cf.createConnection(System.getProperty("USER"), System.getProperty("PASSWORD"));
-			connection.start();
-			session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+			consumerConnection = cf.createConnection(System.getProperty("USER"), System.getProperty("PASSWORD"));
+			producerConnection = cf.createConnection(System.getProperty("USER"), System.getProperty("PASSWORD"));
+			consumerConnection.start();
+			producerConnection.start();
+			session = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
 			
 		} catch (Exception e) {
@@ -103,7 +106,7 @@ public class ArtemisBenchmarkDriver implements BenchmarkDriver {
 	@Override
 	public CompletableFuture<BenchmarkProducer> createProducer(String topic) {
 		try {
-			return CompletableFuture.completedFuture(new ArtemisBenchmarkProducer(topic, connection));
+			return CompletableFuture.completedFuture(new ArtemisBenchmarkProducer(topic, producerConnection));
 		} catch (Exception e) {
 			CompletableFuture<BenchmarkProducer> future = new CompletableFuture<>();
 			future.completeExceptionally(e);
@@ -118,7 +121,7 @@ public class ArtemisBenchmarkDriver implements BenchmarkDriver {
 		ForkJoinPool.commonPool().submit(() -> {
 			try {
 				String queueName = topic + "-" + subscriptionName;
-				BenchmarkConsumer consumer = new ArtemisBenchmarkConsumer(topic, queueName, connection,
+				BenchmarkConsumer consumer = new ArtemisBenchmarkConsumer(topic, queueName, consumerConnection,
 						consumerCallback);
 				future.complete(consumer);
 			} catch (Exception e) {
@@ -137,8 +140,12 @@ public class ArtemisBenchmarkDriver implements BenchmarkDriver {
 			session.close();
 		}
 		
-		if (connection != null) {
-			connection.close();
+		if (producerConnection != null) {
+			producerConnection.close();
+		}
+
+		if (consumerConnection != null) {
+			consumerConnection.close();
 		}
 		log.info("ActiveMQ Artemis benchmark driver successfully shut down");
 	}
