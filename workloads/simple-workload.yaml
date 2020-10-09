@@ -30,7 +30,7 @@ consumerPerSubscription: 1
 createDestinations: false
 queueName: "eai.benchmark.tool.unicast"
 topicNames: ["eai.benchmark.transactions.multicast", "eai.benchmark.transactions.multicast.testA.unicast", "eai.benchmark.transactions.multicast.testB.unicast", "eai.benchmark.transactions.multicast.testC.unicast", "eai.benchmark.transactions.multicast.testD.unicast"]
-producerRate: 10000
+producerRate: 60
 consumerBacklogSizeGB: 0
 testDurationMinutes: 5
 

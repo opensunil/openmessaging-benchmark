@@ -38,10 +38,12 @@ public class ArtemisBenchmarkConsumer implements BenchmarkConsumer {
 	private final Session session;
 	private MessageConsumer consumer = null;
 
-	public ArtemisBenchmarkConsumer(String topic, String queueName, Connection connection, ConsumerCallback callback)
+	public ArtemisBenchmarkConsumer(String topic, String queueName, javax.jms.ConnectionFactory cf, ConsumerCallback callback)
 			throws JMSException {
-		log.info("Creating session with connection: "+connection);
-		session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+		log.info("Creating session with connection factory: "+cf);
+		Connection conn = cf.createConnection();
+		conn.start();
+		session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 		try {
 			log.info("Get Queue: "+topic);
 			Queue queue = session.createQueue(topic);

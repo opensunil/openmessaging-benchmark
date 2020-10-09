@@ -23,3 +23,6 @@ driverClass: io.openmessaging.benchmark.driver.artemis.ArtemisBenchmarkDriver
 # ActiveMQ Artemis client-specific configuration
 #brokerAddress: tcp://193.122.156.2:61616
 brokerAddress: amqp://localhost:61616
+poolMaxConnections: 10
+poolMaximumActiveSessionPerConnection: 50
+#expiryTimeout: 300

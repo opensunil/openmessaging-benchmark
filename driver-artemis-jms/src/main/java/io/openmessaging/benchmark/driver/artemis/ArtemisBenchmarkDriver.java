@@ -28,6 +28,7 @@ import javax.jms.Connection;
 import javax.jms.Session;
 import javax.naming.InitialContext;
 
+import org.apache.activemq.jms.pool.PooledConnectionFactory;
 import org.apache.bookkeeper.stats.StatsLogger;
 import org.apache.qpid.jms.JmsConnectionFactory;
 import org.slf4j.Logger;
@@ -45,11 +46,12 @@ import io.openmessaging.benchmark.driver.ConsumerCallback;
 
 public class ArtemisBenchmarkDriver implements BenchmarkDriver {
 	private ArtemisConfig config;
-
+	PooledConnectionFactory pooledCF;
 	private InitialContext context;
-	private Connection consumerConnection;
-	private Connection producerConnection;
-	private Session session;
+
+//	private Connection consumerConnection;
+//	private Connection producerConnection;
+//	private Session session;
 
 	@Override
 	public void initialize(File configurationFile, StatsLogger statsLogger) throws IOException {
@@ -64,11 +66,22 @@ public class ArtemisBenchmarkDriver implements BenchmarkDriver {
 
 			context = new InitialContext(jndi_env);
 			JmsConnectionFactory cf = (JmsConnectionFactory) context.lookup("myFactoryLookup");
-			consumerConnection = cf.createConnection(System.getProperty("USER"), System.getProperty("PASSWORD"));
-			producerConnection = cf.createConnection(System.getProperty("USER"), System.getProperty("PASSWORD"));
-			consumerConnection.start();
-			producerConnection.start();
-			session = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+			pooledCF = new PooledConnectionFactory();
+
+			pooledCF.setConnectionFactory(cf);
+			if (config.poolMaxConnections>0) pooledCF.setMaxConnections(config.poolMaxConnections); else pooledCF.setMaxConnections(10);
+			if (config.poolMaximumActiveSessionPerConnection>0) pooledCF.setMaximumActiveSessionPerConnection(config.poolMaximumActiveSessionPerConnection);
+				else pooledCF.setMaximumActiveSessionPerConnection(50);
+			if (config.expiryTimeout>0) pooledCF.setExpiryTimeout(config.expiryTimeout);
+
+			pooledCF.start();
+			// Defaults: connectionTimeout=30s, idleTimeout=30s
+
+//			consumerConnection = cf.createConnection(System.getProperty("USER"), System.getProperty("PASSWORD"));
+//			producerConnection = cf.createConnection(System.getProperty("USER"), System.getProperty("PASSWORD"));
+//			consumerConnection.start();
+//			producerConnection.start();
+//			session = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
 			
 		} catch (Exception e) {
@@ -92,7 +105,8 @@ public class ArtemisBenchmarkDriver implements BenchmarkDriver {
 		ForkJoinPool.commonPool().submit(() -> {
 			try {
 				log.info("Creating queue: "+topic);
-				session.createQueue(topic);
+//				session.createQueue(topic);
+				pooledCF.createQueueConnection().createSession().createQueue(topic);
 				log.info("Create queue task complete");
 				future.complete(null);
 			} catch (Exception e) {
@@ -106,7 +120,7 @@ public class ArtemisBenchmarkDriver implements BenchmarkDriver {
 	@Override
 	public CompletableFuture<BenchmarkProducer> createProducer(String topic) {
 		try {
-			return CompletableFuture.completedFuture(new ArtemisBenchmarkProducer(topic, producerConnection));
+			return CompletableFuture.completedFuture(new ArtemisBenchmarkProducer(topic, pooledCF));
 		} catch (Exception e) {
 			CompletableFuture<BenchmarkProducer> future = new CompletableFuture<>();
 			future.completeExceptionally(e);
@@ -121,7 +135,7 @@ public class ArtemisBenchmarkDriver implements BenchmarkDriver {
 		ForkJoinPool.commonPool().submit(() -> {
 			try {
 				String queueName = topic + "-" + subscriptionName;
-				BenchmarkConsumer consumer = new ArtemisBenchmarkConsumer(topic, queueName, consumerConnection,
+				BenchmarkConsumer consumer = new ArtemisBenchmarkConsumer(topic, queueName, pooledCF,
 						consumerCallback);
 				future.complete(consumer);
 			} catch (Exception e) {
@@ -136,16 +150,20 @@ public class ArtemisBenchmarkDriver implements BenchmarkDriver {
 	public void close() throws Exception {
 		log.info("Shutting down ActiveMQ Artemis benchmark driver");
 		
-		if (session!=null) {
-			session.close();
-		}
+//		if (session!=null) {
+//			session.close();
+//		}
 		
-		if (producerConnection != null) {
-			producerConnection.close();
-		}
+//		if (producerConnection != null) {
+//			producerConnection.close();
+//		}
 
-		if (consumerConnection != null) {
-			consumerConnection.close();
+//		if (consumerConnection != null) {
+//			consumerConnection.close();
+//		}
+
+		if (pooledCF != null){
+			pooledCF.stop();
 		}
 		log.info("ActiveMQ Artemis benchmark driver successfully shut down");
 	}

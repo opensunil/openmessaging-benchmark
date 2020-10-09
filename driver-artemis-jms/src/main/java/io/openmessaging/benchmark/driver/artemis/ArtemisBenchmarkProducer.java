@@ -39,12 +39,14 @@ public class ArtemisBenchmarkProducer implements BenchmarkProducer {
 	private Session session;
 	private MessageProducer producer;
 
-	public ArtemisBenchmarkProducer(String address, Connection connection) {
+	public ArtemisBenchmarkProducer(String address, javax.jms.ConnectionFactory cf) {
 		session = null;
 		producer = null;
 
 		try {
-			session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+			Connection conn = cf.createConnection();
+			conn.start();
+			session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 			Queue queue = session.createQueue(address);
 			log.info("Create queue addressed: "+address+" queue: "+queue);
 			producer = session.createProducer(queue);
