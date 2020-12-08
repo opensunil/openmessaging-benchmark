@@ -21,6 +21,8 @@ package io.openmessaging.benchmark.driver.artemis;
 
 public class ArtemisConfig {
     public String brokerAddress;
+    public String username;
+    public String password;
 
     public int poolMaxConnections;
     public int poolMaximumActiveSessionPerConnection;
